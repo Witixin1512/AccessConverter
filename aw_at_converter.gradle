@@ -44,7 +44,7 @@ static def convertMojmapToSrg(String fileContents, String mojmap, String signatu
         accurateString = accurateString.reverse()
         def srgSplit = accurateString.split("_", 3)
         String finalSrg = "f_" + srgSplit[1].reverse() + "_"
-        return new ATEntry(modifier, clazz, finalSrg, signature + " #" + mojmap);
+        return new ATEntry(modifier, clazz, finalSrg + " #" + mojmap, signature);
     }
     return new ATEntry(modifier, clazz, "INVALID_TYPE_NAME_SUPPLIED", signature);
 }
