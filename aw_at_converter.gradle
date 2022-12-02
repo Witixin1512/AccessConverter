@@ -1,9 +1,5 @@
 import java.util.stream.Collectors
 
-task convertAW {
-    convertAccessWideners(project(":Common").file("src/main/resources/jeitweaker.accesswidener"))
-}
-
 class ATEntry {
     public String modifier
     public final String clazz
@@ -18,7 +14,7 @@ class ATEntry {
     }
 
     String toString() {
-        return modifier + " "  + clazz + " " + srgName + " " + (srgName.startsWith("f_") ? "" : signature)
+        return modifier + " "  + clazz + " " + srgName + (srgName.startsWith("m") ? "" : " ") + (srgName.startsWith("f_") ? "" : signature)
     }
 
     void setModifier(String modifier){
@@ -34,7 +30,7 @@ static def convertMojmapToSrg(String fileContents, String mojmap, String signatu
         result = result.reverse()
         def srgSplit = result.split("_", 3)
         String finalSrgNumber = "m_" + srgSplit[1].reverse() + "_"
-        return new ATEntry(modifier, clazz, finalSrgNumber, signature + " #" + mojmap)
+        return new ATEntry(modifier, clazz.replace("/", "."), finalSrgNumber, signature + " #" + mojmap)
     }
     if (type == "field") {
         int indexOfClass = fileContents.indexOf(clazz + " " + clazz)
@@ -44,7 +40,7 @@ static def convertMojmapToSrg(String fileContents, String mojmap, String signatu
         accurateString = accurateString.reverse()
         def srgSplit = accurateString.split("_", 3)
         String finalSrg = "f_" + srgSplit[1].reverse() + "_"
-        return new ATEntry(modifier, clazz, finalSrg + " #" + mojmap, signature);
+        return new ATEntry(modifier, clazz.replace("/", "."), finalSrg + " #" + mojmap, signature);
     }
     return new ATEntry(modifier, clazz, "INVALID_TYPE_NAME_SUPPLIED", signature);
 }
