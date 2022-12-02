@@ -1,5 +1,6 @@
-def convertAW() {
+def convertAccessWideners() {
     def awPath = rootProject.file(properties.get("awPath"))
+    print awPath
     def atPath = rootProject.file("Forge/src/main/resources/META-INF")
     if (!atPath.exists()) atPath.mkdir()
 }
