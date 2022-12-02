@@ -1,7 +1,5 @@
-tasks.create("convertAW") {
+task convertAW {
     def awPath = rootProject.file(properties.get("awPath"))
     def atPath = rootProject.file("Forge/src/main/resources/META-INF")
     if (!atPath.exists()) atPath.mkdir()
-
-
 }
