@@ -1,4 +1,4 @@
-package witixin.accessconverter;
+package witixin.accessconverter.conversion;
 
 public class ATEntry {
     public String modifier;

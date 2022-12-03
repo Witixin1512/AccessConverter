@@ -13,7 +13,7 @@ public class AccessConverterExtension {
         return atExtension;
     }
 
-    public void atExtension(Action<? super ConvertToATExtension> action) {
+    public void convertAW(Action<? super ConvertToATExtension> action) {
         action.execute(atExtension);
     }
 
@@ -21,7 +21,7 @@ public class AccessConverterExtension {
         return awExtension;
     }
 
-    public void awExtension(Action<? super ConvertToAWExtension> action) {
+    public void convertAT(Action<? super ConvertToAWExtension> action) {
         action.execute(awExtension);
     }
 
@@ -36,13 +36,22 @@ public class AccessConverterExtension {
     public static class ConvertToATExtension {
         //Takes in a file as an input, converts to AT
         private File awLocation;
+        private File outputLocation;
 
         public File getAwLocation() {
             return awLocation;
         }
 
-        public void awLocation(File file) {
+        public void fileToConvert(File file) {
             this.awLocation = file;
+        }
+
+        public File getOutputLocation() {
+            return outputLocation;
+        }
+
+        public void fileOutput(File file) {
+            this.outputLocation = file;
         }
     }
 
@@ -50,13 +59,22 @@ public class AccessConverterExtension {
     public static class ConvertToAWExtension {
         //Takes in an AT and saves it in the given location.
         private File awLocation;
+        private File atLocation;
 
         public File getAwLocation() {
             return awLocation;
         }
 
-        public void awLocation(File file) {
+        public void saveConversionTo(File file) {
             this.awLocation = file;
+        }
+
+        public File getAtLocation() {
+            return atLocation;
+        }
+
+        public void convertFrom(File file) {
+            this.atLocation = file;
         }
     }
 }
