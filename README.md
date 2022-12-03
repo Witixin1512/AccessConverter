@@ -1,2 +1,5 @@
-# aw_at_converter
-A repository for hosting a gradle script to automatically convert an AccessWidener into an AccessTransformer for MultiLoader environments
+# AccessConverter
+A Gradle Plugin for automatically converting from Access Wideners to Access Transformers and viceversa.
+
+Apply the plugin the following way:
+
