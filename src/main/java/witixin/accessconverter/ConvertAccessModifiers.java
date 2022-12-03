@@ -11,7 +11,6 @@ public class ConvertAccessModifiers implements Action<Task> {
         AccessConverterExtension extension = project.getExtensions().getByType(AccessConverterExtension.class);
 
         if (extension.getATExtension() != null) {
-            System.out.println("Extension isn't null!");
             ATConverter.getPathFromMinecraftVersion(project, extension.getMcVersion());
         }
 
