@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'witixin.accessconverter'
-version '1.0.3'
+version '1.0.7'
 if (System.getenv('BUILD_NUMBER') != null) {
     version += "." + System.getenv('BUILD_NUMBER')
 }
