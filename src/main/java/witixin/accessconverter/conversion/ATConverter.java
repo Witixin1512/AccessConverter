@@ -40,7 +40,6 @@ public class ATConverter {
                 lineCopy = line;
                 if (!line.isEmpty() && counter != 0 && !line.contains(AccessConverterPlugin.EXCLUDE_FROM_TRANSFORMATIONS_COMMENT)) {
                     String[] splitString = line.split(" ");
-                    System.out.println(line + " " + counter);
                     String accessModifier = splitString[0].equals("accessible") ? "public" : "public-f";
                     String type = splitString[1];
                     String clazz = splitString[2];
@@ -51,14 +50,18 @@ public class ATConverter {
                         String mojmapName = splitString[3];
                         //target is either the method signature if it's a method or the target type if it's a field
                         String target = splitString[4];
-                        ATEntry atEntry = map.get(mojmapName);
+                        String key = (clazz + mojmapName + target);
+                        ATEntry atEntry = map.get(key);
                         if (atEntry == null) {
                             atEntry = convertMojmapToSrg(tsrgContents, mojmapName, target, accessModifier, clazz, type);
-                            map.put(mojmapName, atEntry);
+                            System.out.println(atEntry);
+                            map.put(key, atEntry);
                         }
                         else {
-                            if (!atEntry.modifier.equals("public-f")) atEntry.setModifier("public-f");
-                            map.put(mojmapName, atEntry);
+                            if (!atEntry.modifier.equals("public-f")) {
+                                atEntry.setModifier("public-f");
+                                map.put(key, atEntry);
+                            }
                         }
                     }
                 }
@@ -70,7 +73,6 @@ public class ATConverter {
 
             try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
                 fileWriter.write(toWrite);
-                project.getLogger().info(toWrite);
                 return true;
             } catch (IOException exception) {
                 project.getLogger().error(exception.getMessage());
@@ -90,11 +92,16 @@ public class ATConverter {
     public static ATEntry convertMojmapToSrg(String tsrgContents, String mojmapName, String target, String acccesModifier, String clazz, String javaType) {
         if (javaType.equals("method")) {
             String toFind = " " + target + " " + mojmapName;
-            int index = tsrgContents.indexOf(toFind);
-            String result = Utils.reverseString(tsrgContents.substring(0, index));
-            String[] srgSplit = result.split("_", 3);
-            String finalSrgNumber = "m_" + Utils.reverseString(srgSplit[1]) + "_";
-            return new ATEntry(acccesModifier, clazz.replace("/", "."), finalSrgNumber, target + " #" + mojmapName);
+            if (mojmapName.equals("<init>")) {
+                return new ATEntry(acccesModifier, clazz.replace("/", "."), "", mojmapName + target);
+            }
+            else {
+                int index = tsrgContents.indexOf(toFind);
+                String result = Utils.reverseString(tsrgContents.substring(0, index));
+                String[] srgSplit = result.split("_", 3);
+                String finalSrgNumber = "m_" + Utils.reverseString(srgSplit[1]) + "_";
+                return new ATEntry(acccesModifier, clazz.replace("/", "."), finalSrgNumber, target + " #" + mojmapName);
+            }
         }
         if (javaType.equals("field")) {
             int indexOfClass = tsrgContents.indexOf(clazz + " " + clazz);
@@ -106,6 +113,12 @@ public class ATConverter {
             return new ATEntry(acccesModifier, clazz.replace("/", "."), finalSrg + " #" + mojmapName,target);
         }
         return new ATEntry(acccesModifier, clazz, "INVALID_TYPE_NAME_SUPPLIED", target);
+    }
+
+    private static void logIfDamageSource(final String toLog) {
+        if (toLog.contains("DamageSource")) {
+            System.out.println(toLog);
+        }
     }
 
     private static class ATEntry {
@@ -121,12 +134,35 @@ public class ATConverter {
             this.signature = signature;
         }
 
+        @Override
         public String toString() {
-            return modifier + " "  + clazz + " " + srgName + (srgName.startsWith("m") ? "" : " ") + (srgName.startsWith("f_") ? "" : signature);
+            return modifier + " "  + clazz + " " + srgName + (srgName.startsWith("m") || srgName.isEmpty() ? "" : " ") + (srgName.startsWith("f_") ? "" : signature);
         }
 
         void setModifier(String modifier){
             this.modifier = modifier;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ATEntry atEntry = (ATEntry) o;
+
+            if (modifier != null ? !modifier.equals(atEntry.modifier) : atEntry.modifier != null) return false;
+            if (clazz != null ? !clazz.equals(atEntry.clazz) : atEntry.clazz != null) return false;
+            if (srgName != null ? !srgName.equals(atEntry.srgName) : atEntry.srgName != null) return false;
+            return signature != null ? signature.equals(atEntry.signature) : atEntry.signature == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = modifier != null ? modifier.hashCode() : 0;
+            result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
+            result = 31 * result + (srgName != null ? srgName.hashCode() : 0);
+            result = 31 * result + (signature != null ? signature.hashCode() : 0);
+            return result;
         }
     }
 }

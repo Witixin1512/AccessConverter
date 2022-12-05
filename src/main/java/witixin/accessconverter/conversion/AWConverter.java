@@ -9,6 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+/**
+ * Converts an AT into an AW
+ */
 public class AWConverter {
     public static boolean convertAW(Project project, String version, File awFileToOutputIn, File atFileToConvert) {
 
@@ -22,12 +26,6 @@ public class AWConverter {
 
         File clientMappings = Utils.getClientMappings(version, project);
         String mappingsContents = Utils.getFileContents(clientMappings, project);
-
-        try (FileWriter fileWriter = new FileWriter(new File(awFileToOutputIn.getParentFile(), "test_output.txt"))) {
-            fileWriter.write(contents);
-        } catch (IOException exception) {
-            project.getLogger().error(exception.getMessage());
-        }
 
         if (mappingsContents.isEmpty()) {
             project.getLogger().error("Mappings File is empty! Verify that " + clientMappings.getAbsolutePath() + " is not empty!");
@@ -80,13 +78,12 @@ public class AWConverter {
                             regex = splitSrg[2] + "m_" + srgNumber + "_; ";
                             regex = Utils.reverseString(regex.replace("(", "\\(").replace("/", "\\/").replace(")", "\\)").replace("$", "\\$"));
                             System.out.println(regex);
-                            regex = Utils.reverseString(regex.replace(";", "*"));
+                            regex = Utils.reverseString(regex);
                             test = contents.split(regex);
-                            System.out.println(regex);
                         }
                         test = test[1].split(" ", 3);
 
-                        String reverseTest = test[2].substring(0, 20);
+                        String reverseTest = test[2].substring(0, 40);
                         test = test[1].split("m_" + nextSrg + "_");
                         if (reverseTest.split("p_" + nextSrg + "_", 3).length >= 2) {
                             test[0] = test[0].substring(0, test[0].length() - 1);
@@ -132,11 +129,11 @@ public class AWConverter {
     }
 
     private static class AWEntry {
-        private String accessKey;
-        private String type;
-        private String clazz;
-        private String mojmapName;
-        private String signature;
+        private final String accessKey;
+        private final String type;
+        private final String clazz;
+        private final String mojmapName;
+        private final String signature;
 
         public AWEntry(String accessKey, String type, String clazz, String mojmapName, String signature) {
             this.accessKey = accessKey;
@@ -149,6 +146,30 @@ public class AWConverter {
         @Override
         public String toString() {
             return String.format("%s %s %s %s %s", accessKey, type, clazz, mojmapName, signature);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            AWEntry awEntry = (AWEntry) o;
+
+            if (accessKey != null ? !accessKey.equals(awEntry.accessKey) : awEntry.accessKey != null) return false;
+            if (type != null ? !type.equals(awEntry.type) : awEntry.type != null) return false;
+            if (clazz != null ? !clazz.equals(awEntry.clazz) : awEntry.clazz != null) return false;
+            if (mojmapName != null ? !mojmapName.equals(awEntry.mojmapName) : awEntry.mojmapName != null) return false;
+            return signature != null ? signature.equals(awEntry.signature) : awEntry.signature == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = accessKey != null ? accessKey.hashCode() : 0;
+            result = 31 * result + (type != null ? type.hashCode() : 0);
+            result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
+            result = 31 * result + (mojmapName != null ? mojmapName.hashCode() : 0);
+            result = 31 * result + (signature != null ? signature.hashCode() : 0);
+            return result;
         }
     }
 }
