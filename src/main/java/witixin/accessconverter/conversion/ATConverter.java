@@ -5,9 +5,13 @@ import witixin.accessconverter.AccessConverterPlugin;
 import witixin.accessconverter.Utils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -15,18 +19,18 @@ import java.util.stream.Collectors;
  */
 public class ATConverter {
 
-    public static boolean convertAW(Project project, String version, File awFileToConvert, File toOutputIn) {
+    public static boolean convertAW(Project project, String version, File awFileToConvert, File toOutputIn, boolean sortInput) {
 
         if (awFileToConvert == null){
-            project.getLogger().error("Supplied null Access Widener file path in 'accessConverter/atExtension' extension! Specify one using 'fileToConvert' followed by a valid File");
+            project.getLogger().error("[ERROR] Supplied null Access Widener file path in 'accessConverter/atExtension' extension! Specify one using 'fileToConvert' followed by a valid File");
             return false;
         }
 
         File tsrg = Utils.getTSRGPath(project, version);
         String tsrgContents = Utils.getFileContents(tsrg, project);
         if (tsrgContents.isEmpty()){
-            project.getLogger().error("tsrg contents are empty");
-            project.getLogger().error("Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
+            project.getLogger().error("[ERROR] tsrg contents are empty");
+            project.getLogger().error("[ERROR] Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
             return false;
         }
         Map<String, ATEntry> map = new HashMap<>();
@@ -54,7 +58,6 @@ public class ATConverter {
                         ATEntry atEntry = map.get(key);
                         if (atEntry == null) {
                             atEntry = convertMojmapToSrg(tsrgContents, mojmapName, target, accessModifier, clazz, type);
-                            System.out.println(atEntry);
                             map.put(key, atEntry);
                         }
                         else {
@@ -69,7 +72,7 @@ public class ATConverter {
                 ++counter;
             }
 
-            String toWrite = map.values().stream().map(ATEntry::toString).collect(Collectors.joining(System.lineSeparator()));
+            String toWrite = map.values().stream().map(ATEntry::toString).sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
 
             try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
                 fileWriter.write(toWrite);
@@ -84,8 +87,28 @@ public class ATConverter {
             exception.printStackTrace(new PrintWriter(sw));
             String stacktrace = sw.toString();
             project.getLogger().error(stacktrace);
-            project.getLogger().error("Erroring line: " + lineCopy);
+            project.getLogger().error("[ERROR] Erroring line: " + lineCopy);
         }
+        if (sortInput) {
+            try {
+                List<String> originalFile = Files.readAllLines(awFileToConvert.getAbsoluteFile().toPath());
+                try (FileWriter fileWriter = new FileWriter(awFileToConvert)) {
+                    String originalContents = originalFile.stream().sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
+                    fileWriter.write(originalContents);
+                    project.getLogger().error("Successfully sorted input Access Widener File");
+                    return true;
+                }
+                catch (IOException ioException) {
+                    project.getLogger().error(ioException.getMessage());
+                }
+            }
+            catch (IOException ignored) {}
+
+        }
+        else {
+            return true;
+        }
+
         return false;
     }
 
@@ -113,12 +136,6 @@ public class ATConverter {
             return new ATEntry(acccesModifier, clazz.replace("/", "."), finalSrg + " #" + mojmapName,target);
         }
         return new ATEntry(acccesModifier, clazz, "INVALID_TYPE_NAME_SUPPLIED", target);
-    }
-
-    private static void logIfDamageSource(final String toLog) {
-        if (toLog.contains("DamageSource")) {
-            System.out.println(toLog);
-        }
     }
 
     private static class ATEntry {

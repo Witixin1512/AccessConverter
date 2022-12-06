@@ -37,6 +37,7 @@ public class AccessConverterExtension {
         //Takes in a file as an input, converts to AT
         private File awLocation;
         private File outputLocation;
+        private boolean sortInput;
 
         public File getAwLocation() {
             return awLocation;
@@ -53,6 +54,14 @@ public class AccessConverterExtension {
         public void fileOutput(File file) {
             this.outputLocation = file;
         }
+
+        public void sortInput(boolean bool) {
+            this.sortInput = bool;
+        }
+
+        public boolean doSortInput(){
+            return this.sortInput;
+        }
     }
 
 
@@ -60,6 +69,7 @@ public class AccessConverterExtension {
         //Takes in an AT and saves it in the given location.
         private File awLocation;
         private File atLocation;
+        private boolean sortInput;
 
         public File getAwLocation() {
             return awLocation;
@@ -75,6 +85,14 @@ public class AccessConverterExtension {
 
         public void convertFrom(File file) {
             this.atLocation = file;
+        }
+
+        public void sortInput(boolean bool) {
+            this.sortInput = bool;
+        }
+
+        public boolean doSortInput(){
+            return this.sortInput;
         }
     }
 }

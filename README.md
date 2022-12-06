@@ -12,12 +12,17 @@ accessConverter {
     mcVersion "1.19.2"
     //Converts the AccessWidener found at the fileToConvert location into an accesstransformer dropped into the fileToOutput location.
     convertAW {
+        //optional, sorts the input file
+        sortInput true
         fileToConvert project(':Common').file("/src/main/resources/${modid}.accesswidener")
         fileOutput project(":Forge").file("/src/main/resources/META-INF/accesstransformer.cfg")
     }
     //Does the opposite, converts an AT into AW.
     convertAT {
-        
+        //optional sorts the input file
+        sortInput true
     }
 }
 ```
+
+Run the `convertAccessFiles` task after configuring the plugin and you're set to go!

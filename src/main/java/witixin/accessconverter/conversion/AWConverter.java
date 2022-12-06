@@ -4,6 +4,8 @@ import org.gradle.api.Project;
 import witixin.accessconverter.Utils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,10 +16,10 @@ import java.util.stream.Collectors;
  * Converts an AT into an AW
  */
 public class AWConverter {
-    public static boolean convertAW(Project project, String version, File awFileToOutputIn, File atFileToConvert) {
+    public static boolean convertAW(Project project, String version, File awFileToOutputIn, File atFileToConvert, boolean sortInput) {
 
         if (atFileToConvert == null){
-            project.getLogger().error("Null Access Transformer file provided, unable to convert");
+            project.getLogger().error("[ERROR] Null Access Transformer file provided, unable to convert");
             return false;
         }
 
@@ -28,7 +30,7 @@ public class AWConverter {
         String mappingsContents = Utils.getFileContents(clientMappings, project);
 
         if (mappingsContents.isEmpty()) {
-            project.getLogger().error("Mappings File is empty! Verify that " + clientMappings.getAbsolutePath() + " is not empty!");
+            project.getLogger().error("[ERROR] Mappings File is empty! Verify that " + clientMappings.getAbsolutePath() + " is not empty!");
             return false;
         }
 
@@ -73,16 +75,7 @@ public class AWConverter {
                         String regex = "m_" + srgNumber + "_ " + splitSrg[2];
                         regex = regex.replace("(", "\\(").replace("/", "\\/").replace(")", "\\)").replace("$", "\\$");
                         String[] test = contents.split(regex);
-                        System.out.println(regex);
-                        if (test.length == 1) {
-                            regex = splitSrg[2] + "m_" + srgNumber + "_; ";
-                            regex = Utils.reverseString(regex.replace("(", "\\(").replace("/", "\\/").replace(")", "\\)").replace("$", "\\$"));
-                            System.out.println(regex);
-                            regex = Utils.reverseString(regex);
-                            test = contents.split(regex);
-                        }
                         test = test[1].split(" ", 3);
-
                         String reverseTest = test[2].substring(0, 40);
                         test = test[1].split("m_" + nextSrg + "_");
                         if (reverseTest.split("p_" + nextSrg + "_", 3).length >= 2) {
@@ -90,10 +83,13 @@ public class AWConverter {
                         }
                         if (test[0].endsWith("static"))test[0] = test[0].substring(0, test[0].length() - "static".length());
 
-                        //TODO Add support for classes asap
-
                         accessWidenerOutput.add(new AWEntry("accessible", "method", clazz, test[0], splitSrg[2]).toString());
                         if (accessMod.equals("public-f"))accessWidenerOutput.add(new AWEntry("extendable", "method", clazz, test[0], splitSrg[2]).toString());
+                    }
+                    if (srgName.startsWith("<init>")) {
+                        String result = "method " + clazz + " " + srgName.replace(">", "> ");
+                        accessWidenerOutput.add("accessible " + result);
+                        if (accessMod.equals("public-f")) accessWidenerOutput.add("extendable " + result);
                     }
                 }
                 else {
@@ -101,6 +97,7 @@ public class AWConverter {
                     if (accessMod.equals("public-f")){
                         newAccess = "extendable ";
                     }
+                    newAccess = newAccess.concat("class ");
                     accessWidenerOutput.add(newAccess + clazz);
                 }
 
@@ -113,16 +110,36 @@ public class AWConverter {
             exception.printStackTrace(new PrintWriter(sw));
             String stacktrace = sw.toString();
             project.getLogger().error(stacktrace);
-            project.getLogger().error("Erroring line: " + lineCopy);
+            project.getLogger().error("[ERROR] Erroring line: " + lineCopy);
         }
 
-        String toWrite = accessWidenerOutput.stream().collect(Collectors.joining(System.lineSeparator()));
+
+        String toWrite = accessWidenerOutput.stream().sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
         try (FileWriter fileWriter = new FileWriter(awFileToOutputIn)) {
             fileWriter.write(toWrite);
             project.getLogger().info(toWrite);
-            return true;
         } catch (IOException exception) {
             project.getLogger().error(exception.getMessage());
+        }
+
+        if (sortInput) {
+            try {
+                List<String> originalFile = Files.readAllLines(atFileToConvert.getAbsoluteFile().toPath());
+                try (FileWriter fileWriter = new FileWriter(atFileToConvert)) {
+                    String originalContents = originalFile.stream().sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
+                    fileWriter.write(originalContents);
+                    project.getLogger().error("Successfully sorted input Access Transformer File");
+                    return true;
+                }
+                catch (IOException ioException) {
+                    project.getLogger().error(ioException.getMessage());
+                }
+            }
+            catch (IOException ignored) {}
+
+        }
+        else {
+            return true;
         }
 
         return false;
