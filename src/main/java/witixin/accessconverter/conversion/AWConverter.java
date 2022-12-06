@@ -55,14 +55,10 @@ public class AWConverter {
                         //Field handling
                         String[] newString = contents.split(srgName)[1].split(" ", 2);
 
-                        project.getLogger().error("Starting logging");
-
-                        project.getLogger().error(newString[0]);
-
                         String resultString = newString[1];
-                        if (newString[1].contains("<")) resultString = newString[1].split("<")[0];
+                        if (resultString.contains("<")) resultString = resultString.split("<")[0];
 
-                        project.getLogger().error(resultString);
+                        if (resultString.contains("_")) resultString = resultString.substring(0, resultString.indexOf("_") - 1);
 
                         String[] classMapping = mappingsContents.split(splitString[1] + " ->");
 
