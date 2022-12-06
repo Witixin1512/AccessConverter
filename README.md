@@ -20,8 +20,12 @@ accessConverter {
     //Does the opposite, converts an AT into AW.
     convertAT {
         //optional sorts the input file
+        convertFrom rootProject.file("testtransformer.cfg")
+        saveConversionTo rootProject.file("outputwidener.accesswidener")
         sortInput true
     }
+    //It is not recommended to have both configurations enabled nor to have one of them depend on the files of the other one.
+    //Keep it mind convertAW is fired first and then convertAT
 }
 ```
 

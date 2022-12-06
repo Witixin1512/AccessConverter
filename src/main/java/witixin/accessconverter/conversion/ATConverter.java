@@ -48,7 +48,7 @@ public class ATConverter {
                     String type = splitString[1];
                     String clazz = splitString[2];
                     if ("class".equals(type)) {
-                       map.put(clazz.replace("/", "_"), new ATEntry("public", clazz.replace("/", "."), "", ""));
+                       map.put(clazz.replace("/", "_"), new ATEntry(accessModifier, clazz.replace("/", "."), "", ""));
                     }
                     else {
                         String mojmapName = splitString[3];
@@ -61,7 +61,7 @@ public class ATConverter {
                             map.put(key, atEntry);
                         }
                         else {
-                            if (!atEntry.modifier.equals("public-f")) {
+                            if (atEntry.modifier.equals("public")) {
                                 atEntry.setModifier("public-f");
                                 map.put(key, atEntry);
                             }
@@ -76,7 +76,6 @@ public class ATConverter {
 
             try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
                 fileWriter.write(toWrite);
-                return true;
             } catch (IOException exception) {
                 project.getLogger().error(exception.getMessage());
             }
@@ -102,7 +101,13 @@ public class ATConverter {
                     project.getLogger().error(ioException.getMessage());
                 }
             }
-            catch (IOException ignored) {}
+            catch (IOException exception) {
+                project.getLogger().error(exception.getMessage());
+                StringWriter sw = new StringWriter();
+                exception.printStackTrace(new PrintWriter(sw));
+                String stacktrace = sw.toString();
+                project.getLogger().error(stacktrace);
+            }
 
         }
         else {

@@ -54,8 +54,15 @@ public class AWConverter {
                     if (srgName.startsWith("f")) {
                         //Field handling
                         String[] newString = contents.split(srgName)[1].split(" ", 2);
+
+                        project.getLogger().error("Starting logging");
+
+                        project.getLogger().error(newString[0]);
+
                         String resultString = newString[1];
                         if (newString[1].contains("<")) resultString = newString[1].split("<")[0];
+
+                        project.getLogger().error(resultString);
 
                         String[] classMapping = mappingsContents.split(splitString[1] + " ->");
 
