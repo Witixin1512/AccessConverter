@@ -6,12 +6,10 @@ import witixin.accessconverter.Utils;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -31,6 +29,7 @@ public class ATConverter {
         if (tsrgContents.isEmpty()){
             project.getLogger().error("[ERROR] tsrg contents are empty");
             project.getLogger().error("[ERROR] Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
+            project.getLogger().error("[ERROR] If there is nothing there, you NEED to import a 1.19.3 workspace with OFFICIAL Mappings on Forge!");
             return false;
         }
         Map<String, ATEntry> map = new HashMap<>();
@@ -72,7 +71,7 @@ public class ATConverter {
                 ++counter;
             }
 
-            String toWrite = map.values().stream().map(ATEntry::toString).sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
+            String toWrite = map.values().stream().map(ATEntry::toString).sorted(String::compareTo).sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
 
             try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
                 fileWriter.write(toWrite);
@@ -91,8 +90,9 @@ public class ATConverter {
         if (sortInput) {
             try {
                 List<String> originalFile = Files.readAllLines(awFileToConvert.getAbsoluteFile().toPath());
+                originalFile.sort(String::compareTo);
                 try (FileWriter fileWriter = new FileWriter(awFileToConvert)) {
-                    String originalContents = originalFile.stream().sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
+                    String originalContents = originalFile.stream().collect(Collectors.joining(System.lineSeparator()));
                     fileWriter.write(originalContents);
                     project.getLogger().error("Successfully sorted input Access Widener File");
                     return true;

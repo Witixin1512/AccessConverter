@@ -17,16 +17,21 @@ public class Utils {
     public static final Map<String, String> MC_VERSION_TO_MCP = Utils.makeMap(map -> {
         map.put("1.18.2", "20220404.173914");
         map.put("1.19.2", "20220805.130853");
+        map.put("1.19.3", "20221207.122022");
         return map;
     });
 
     public static File getTSRGPath(Project project, String mcVersion) {
         File mcpConfigFolder = new File(project.getGradle().getGradleUserHomeDir(), "/caches/forge_gradle/minecraft_user_repo/de/oceanlabs/mcp/mcp_config");
-        return new File(mcpConfigFolder, mcVersion + "-" + MC_VERSION_TO_MCP.get(mcVersion) + "/srg_to_official_" + mcVersion + ".tsrg");
+        String mcpConfigVersion = MC_VERSION_TO_MCP.get(mcVersion);
+        if (mcpConfigVersion == null) throw new NullPointerException("Access Converter does not support that Minecraft Version!");
+        return new File(mcpConfigFolder, mcVersion + "-" + mcpConfigVersion + "/srg_to_official_" + mcVersion + ".tsrg");
     }
 
     public static File getClientMappings(String mcVersion, Project project) {
-        File clientMappings = new File(project.getGradle().getGradleUserHomeDir(), "/caches/forge_gradle/minecraft_user_repo/mcp/" + mcVersion + "-" + MC_VERSION_TO_MCP.get(mcVersion) + "/joined/downloadClientMappings");
+        String mcpConfigVersion = MC_VERSION_TO_MCP.get(mcVersion);
+        if (mcpConfigVersion == null) throw new NullPointerException("Access Converter does not support that Minecraft Version!");
+        File clientMappings = new File(project.getGradle().getGradleUserHomeDir(), "/caches/forge_gradle/minecraft_user_repo/mcp/" + mcVersion + "-" + mcpConfigVersion + "/joined/downloadClientMappings");
         return new File(clientMappings, "client_mappings.txt");
     }
 

@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
  * Converts an AT into an AW
  */
 public class AWConverter {
-    public static boolean convertAW(Project project, String version, File awFileToOutputIn, File atFileToConvert, boolean sortInput) {
+
+    public static boolean convertAT(Project project, String version, File awFileToOutputIn, File atFileToConvert, boolean sortInput) {
 
         if (atFileToConvert == null){
             project.getLogger().error("[ERROR] Null Access Transformer file provided, unable to convert");
@@ -42,7 +43,7 @@ public class AWConverter {
 
         try(BufferedReader br = new BufferedReader(new FileReader(atFileToConvert))) {
             String line = br.readLine();
-            while (line != null && !line.isEmpty()) {
+            while (line != null && !line.isEmpty() && !line.startsWith("#")) {
                 lineCopy = line;
                 String[] splitString = line.split(" ");
                 String accessMod = splitString[0];
@@ -53,7 +54,11 @@ public class AWConverter {
                     String srgName = splitString[2];
                     if (srgName.startsWith("f")) {
                         //Field handling
-                        String[] newString = contents.split(srgName)[1].split(" ", 2);
+                        String[] newString = contents.split(srgName);
+
+                        if (newString.length == 1) throw new IllegalArgumentException("The current line{" + lineCopy + "} contains an SRG Name that could not be found. Please double check it!");
+
+                        newString = newString[1].split(" ", 2);
 
                         String resultString = newString[1];
                         if (resultString.contains("<")) resultString = resultString.split("<")[0];
@@ -128,8 +133,9 @@ public class AWConverter {
         if (sortInput) {
             try {
                 List<String> originalFile = Files.readAllLines(atFileToConvert.getAbsoluteFile().toPath());
+                originalFile.sort(String::compareTo);
                 try (FileWriter fileWriter = new FileWriter(atFileToConvert)) {
-                    String originalContents = originalFile.stream().sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
+                    String originalContents = originalFile.stream().collect(Collectors.joining(System.lineSeparator()));
                     fileWriter.write(originalContents);
                     project.getLogger().error("Successfully sorted input Access Transformer File");
                     return true;

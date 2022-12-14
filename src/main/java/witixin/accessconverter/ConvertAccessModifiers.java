@@ -21,7 +21,7 @@ public class ConvertAccessModifiers implements Action<Task> {
         }
 
         if (extension.getAWExtension() != null) {
-            if (AWConverter.convertAW(project, extension.getMcVersion(), extension.getAWExtension().getAwLocation(), extension.getAWExtension().getAtLocation(), extension.getAWExtension().doSortInput())) {
+            if (AWConverter.convertAT(project, extension.getMcVersion(), extension.getAWExtension().getAwLocation(), extension.getAWExtension().getAtLocation(), extension.getAWExtension().doSortInput())) {
                 project.getLogger().error("Access Transformer Conversion into Access Widener Finished Succesfully.");
             }
             else project.getLogger().error("[ERROR] Access Transformer Conversion Failed");

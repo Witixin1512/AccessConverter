@@ -25,12 +25,18 @@ repositories {
 
 dependencies {
     implementation gradleApi()
+    testImplementation('junit:junit:4.13')
 }
 
 jar.manifest.mainAttributes([
         'Implementation-Title'  : project.name,
         'Implementation-Version': project.version
 ])
+
+tasks.withType(Test).configureEach {
+    // Using JUnitPlatform for running tests
+    useJUnitPlatform()
+}
 
 pluginBundle {
     website = 'https://github.com/Witixin1512/AccessConverter'

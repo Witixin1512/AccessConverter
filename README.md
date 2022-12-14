@@ -13,16 +13,16 @@ accessConverter {
     //Converts the AccessWidener found at the fileToConvert location into an accesstransformer dropped into the fileToOutput location.
     convertAW {
         //optional, sorts the input file
-        sortInput true
-        fileToConvert project(':Common').file("/src/main/resources/${modid}.accesswidener")
-        fileOutput project(":Forge").file("/src/main/resources/META-INF/accesstransformer.cfg")
+        it.sortInput(true)
+        it.fileToConvert(project(':Common').file("/src/main/resources/${modid}.accesswidener"))
+        it.fileOutput(project(":Forge").file("/src/main/resources/META-INF/accesstransformer.cfg"))
     }
     //Does the opposite, converts an AT into AW.
     convertAT {
         //optional sorts the input file
-        convertFrom rootProject.file("testtransformer.cfg")
-        saveConversionTo rootProject.file("outputwidener.accesswidener")
-        sortInput true
+        it.convertFrom(rootProject.file("testtransformer.cfg"))
+        it.saveConversionTo(rootProject.file("outputwidener.accesswidener"))
+        it.sortInput(true)
     }
     //It is not recommended to have both configurations enabled nor to have one of them depend on the files of the other one.
     //Keep it mind convertAW is fired first and then convertAT
