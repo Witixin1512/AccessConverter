@@ -20,12 +20,12 @@ public class ATConverter {
     public static boolean convertAW(Project project, String version, File awFileToConvert, File toOutputIn, boolean sortInput) {
 
         if (awFileToConvert == null){
-            project.getLogger().error("[ERROR] Supplied null Access Widener file path in 'accessConverter/atExtension' extension! Specify one using 'fileToConvert' followed by a valid File");
+            project.getLogger().error("[ERROR] Supplied null Access Widener file path in 'accessConverter/atExtension' extension! Specify one using 'fileToConvert' followed by a valid 'fileOutput'");
             return false;
         }
 
-        File tsrg = Utils.getTSRGPath(project, version);
-        String tsrgContents = Utils.getFileContents(tsrg, project);
+        File tsrg = Utils.getTSRGPath(version);
+        String tsrgContents = Utils.getFileContents(tsrg);
         if (tsrgContents.isEmpty()){
             project.getLogger().error("[ERROR] tsrg contents are empty");
             project.getLogger().error("[ERROR] Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
@@ -71,7 +71,7 @@ public class ATConverter {
                 ++counter;
             }
 
-            String toWrite = map.values().stream().map(ATEntry::toString).sorted(String::compareTo).sorted(String::compareTo).collect(Collectors.joining(System.lineSeparator()));
+            String toWrite = map.values().stream().map(ATEntry::toString).sorted(String::compareToIgnoreCase).collect(Collectors.joining(System.lineSeparator()));
 
             try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
                 fileWriter.write(toWrite);
@@ -90,9 +90,12 @@ public class ATConverter {
         if (sortInput) {
             try {
                 List<String> originalFile = Files.readAllLines(awFileToConvert.getAbsoluteFile().toPath());
-                originalFile.sort(String::compareTo);
+                originalFile.sort(String::compareToIgnoreCase);
+                originalFile.removeIf(it -> it.equals("accessWidener v1 named"));
                 try (FileWriter fileWriter = new FileWriter(awFileToConvert)) {
                     String originalContents = originalFile.stream().collect(Collectors.joining(System.lineSeparator()));
+                    fileWriter.write("accessWidener v1 named");
+                    fileWriter.write(System.lineSeparator());
                     fileWriter.write(originalContents);
                     project.getLogger().error("Successfully sorted input Access Widener File");
                     return true;
