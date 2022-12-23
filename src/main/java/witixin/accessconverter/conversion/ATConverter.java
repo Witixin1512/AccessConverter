@@ -1,6 +1,7 @@
 package witixin.accessconverter.conversion;
 
 import org.gradle.api.Project;
+import org.slf4j.Logger;
 import witixin.accessconverter.AccessConverterPlugin;
 import witixin.accessconverter.Utils;
 
@@ -17,21 +18,7 @@ import java.util.stream.Collectors;
  */
 public class ATConverter {
 
-    public static boolean convertAW(Project project, String version, File awFileToConvert, File toOutputIn, boolean sortInput) {
-
-        if (awFileToConvert == null){
-            project.getLogger().error("[ERROR] Supplied null Access Widener file path in 'accessConverter/atExtension' extension! Specify one using 'fileToConvert' followed by a valid 'fileOutput'");
-            return false;
-        }
-
-        File tsrg = Utils.getTSRGPath(version);
-        String tsrgContents = Utils.getFileContents(tsrg);
-        if (tsrgContents.isEmpty()){
-            project.getLogger().error("[ERROR] tsrg contents are empty");
-            project.getLogger().error("[ERROR] Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
-            project.getLogger().error("[ERROR] If there is nothing there, you NEED to import a 1.19.3 workspace with OFFICIAL Mappings on Forge!");
-            return false;
-        }
+    public static String convertFile(Logger logger, File awFileToConvert, String tsrgContents) {
         Map<String, ATEntry> map = new HashMap<>();
 
         String lineCopy = "";
@@ -47,9 +34,8 @@ public class ATConverter {
                     String type = splitString[1];
                     String clazz = splitString[2];
                     if ("class".equals(type)) {
-                       map.put(clazz.replace("/", "_"), new ATEntry(accessModifier, clazz.replace("/", "."), "", ""));
-                    }
-                    else {
+                        map.put(clazz.replace("/", "_"), new ATEntry(accessModifier, clazz.replace("/", "."), "", ""));
+                    } else {
                         String mojmapName = splitString[3];
                         //target is either the method signature if it's a method or the target type if it's a field
                         String target = splitString[4];
@@ -58,8 +44,7 @@ public class ATConverter {
                         if (atEntry == null) {
                             atEntry = convertMojmapToSrg(tsrgContents, mojmapName, target, accessModifier, clazz, type);
                             map.put(key, atEntry);
-                        }
-                        else {
+                        } else {
                             if (atEntry.modifier.equals("public")) {
                                 atEntry.setModifier("public-f");
                                 map.put(key, atEntry);
@@ -70,23 +55,43 @@ public class ATConverter {
                 line = br.readLine();
                 ++counter;
             }
-
-            String toWrite = map.values().stream().map(ATEntry::toString).sorted(String::compareToIgnoreCase).collect(Collectors.joining(System.lineSeparator()));
-
-            try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
-                fileWriter.write(toWrite);
-            } catch (IOException exception) {
-                project.getLogger().error(exception.getMessage());
+            }catch (Exception exception) {
+                logger.error(exception.getMessage());
+                StringWriter sw = new StringWriter();
+                exception.printStackTrace(new PrintWriter(sw));
+                String stacktrace = sw.toString();
+                logger.error(stacktrace);
+                logger.error("[ERROR] Erroring line: " + lineCopy);
             }
+
+            return map.values().stream().map(ATEntry::toString).sorted(String::compareToIgnoreCase).collect(Collectors.joining(System.lineSeparator()));
         }
-        catch (Exception exception) {
-            project.getLogger().error(exception.getMessage());
-            StringWriter sw = new StringWriter();
-            exception.printStackTrace(new PrintWriter(sw));
-            String stacktrace = sw.toString();
-            project.getLogger().error(stacktrace);
-            project.getLogger().error("[ERROR] Erroring line: " + lineCopy);
+    
+    public static boolean convertAW(Logger logger, String version, File awFileToConvert, File toOutputIn, boolean sortInput) {
+
+        if (awFileToConvert == null){
+            logger.error("[ERROR] Supplied null Access Widener file path in 'accessConverter/atExtension' extension! Specify one using 'fileToConvert' followed by a valid 'fileOutput'");
+            return false;
         }
+
+        File tsrg = Utils.getTSRGPath(version);
+        String tsrgContents = Utils.getFileContents(tsrg);
+
+        if (tsrgContents.isEmpty()){
+            logger.error("[ERROR] tsrg contents are empty");
+            logger.error("[ERROR] Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
+            logger.error("[ERROR] If there is nothing there, you NEED to import a 1.19.3 workspace with OFFICIAL Mappings on Forge!");
+            return false;
+        }
+
+        String toWrite = convertFile(logger, awFileToConvert, tsrgContents);
+
+        try (FileWriter fileWriter = new FileWriter(toOutputIn)) {
+            fileWriter.write(toWrite);
+        } catch (IOException exception) {
+            logger.error(exception.getMessage());
+        }
+
         if (sortInput) {
             try {
                 List<String> originalFile = Files.readAllLines(awFileToConvert.getAbsoluteFile().toPath());
@@ -97,19 +102,19 @@ public class ATConverter {
                     fileWriter.write("accessWidener v1 named");
                     fileWriter.write(System.lineSeparator());
                     fileWriter.write(originalContents);
-                    project.getLogger().error("Successfully sorted input Access Widener File");
+                    logger.error("Successfully sorted input Access Widener File");
                     return true;
                 }
                 catch (IOException ioException) {
-                    project.getLogger().error(ioException.getMessage());
+                    logger.error(ioException.getMessage());
                 }
             }
             catch (IOException exception) {
-                project.getLogger().error(exception.getMessage());
+                logger.error(exception.getMessage());
                 StringWriter sw = new StringWriter();
                 exception.printStackTrace(new PrintWriter(sw));
                 String stacktrace = sw.toString();
-                project.getLogger().error(stacktrace);
+                logger.error(stacktrace);
             }
 
         }
@@ -141,7 +146,7 @@ public class ATConverter {
             stringToFind = Utils.reverseString(stringToFind.substring(0, accurateStringPosition));
             String[] srgSplit = stringToFind.split("_", 3);
             String finalSrg = "f_" + Utils.reverseString(srgSplit[1]) + "_";
-            return new ATEntry(acccesModifier, clazz.replace("/", "."), finalSrg + " #" + mojmapName,target);
+            return new ATEntry(acccesModifier, clazz.replace("/", "."), finalSrg + " #" + mojmapName,"");
         }
         return new ATEntry(acccesModifier, clazz, "INVALID_TYPE_NAME_SUPPLIED", target);
     }
@@ -161,7 +166,7 @@ public class ATConverter {
 
         @Override
         public String toString() {
-            return modifier + " "  + clazz + " " + srgName + (srgName.startsWith("m") || srgName.isEmpty() ? "" : " ") + (srgName.startsWith("f_") ? "" : signature);
+            return modifier + " "  + clazz + " " + srgName + (srgName.isEmpty() ? " " : "") + signature;
         }
 
         void setModifier(String modifier){

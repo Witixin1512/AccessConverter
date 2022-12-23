@@ -18,7 +18,7 @@ public class AccessConverterPlugin implements Plugin<Project> {
             final AccessConverterExtension.ConvertToATExtension atExtension = extension.getATExtension();
 
             if (atExtension != null) {
-                if (ATConverter.convertAW(project, extension.getMcVersion(), atExtension.getAwLocation(), atExtension.getOutputLocation(), atExtension.doSortInput())){
+                if (ATConverter.convertAW(project.getLogger(), extension.getMcVersion(), atExtension.getAwLocation(), atExtension.getOutputLocation(), atExtension.doSortInput())){
                     project.getLogger().error("Access Widener Conversion into Access Transformer Finished Succesfully.");
                 }
                 else project.getLogger().error("[ERROR] Access Widener Conversion Failed");

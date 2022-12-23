@@ -9,7 +9,6 @@ import witixin.accessconverter.conversion.ATConverter;
 import witixin.accessconverter.conversion.AWConverter;
 
 import java.io.File;
-import java.io.IOException;
 
 import static org.gradle.internal.impldep.org.junit.Assert.assertEquals;
 
@@ -20,35 +19,43 @@ import static org.gradle.internal.impldep.org.junit.Assert.assertEquals;
 
 public class WidenerToTransformerTest {
 
-    ClassLoader classLoader = getClass().getClassLoader();
-    File emojifulAW = new File(classLoader.getResource("emojiful/original_emojiful.accesswidener").getFile());
-    File emojifulIdeal = new File(classLoader.getResource("emojiful/result.perfect_widener").getFile());
-    File emojifulSaveLocation = new File(emojifulAW.getParentFile(), "emojiful/result.perfect_transformer");
-
-    File emojifulAT = new File(emojifulAW.getParentFile(), "original_accesstransformer.cfg");
+    public static final String[] MC_VERSIONS = {"1.19.3"};
 
     @Test
-    public void testEverything() throws IOException {
+    public void testEverything() {
 
         Logger logger = LoggerFactory.getLogger("AccessConverter-Test");
 
-        File tsrg = Utils.getTSRGPath("1.19.3");
-        String tsrgContents = Utils.getFileContents(tsrg);
+        for (String gameVersion : MC_VERSIONS) {
+            File tsrg = Utils.getTSRGPath(gameVersion);
+            String tsrgContents = Utils.getFileContents(tsrg);
 
-        File clientMappings = Utils.getClientMappings("1.19.3");
-        String mappingsContents = Utils.getFileContents(clientMappings);
+            File clientMappings = Utils.getClientMappings(gameVersion);
+            String mappingsContents = Utils.getFileContents(clientMappings);
 
-        String atToAW = "accessWidener v1 named" + System.lineSeparator().concat(AWConverter.convertFile(logger, emojifulAT, tsrgContents, mappingsContents)).concat(System.lineSeparator());
-        assertEmojiful(atToAW, "", new File(emojifulAW.getParentFile(), "result.perfect_widener"));
 
-        String aWToAT = ATConverter.
+
+            assertMod("emojiful", tsrgContents, mappingsContents, gameVersion, logger);
+        }
     }
 
+    private void assertMod(String modid, String tsrgContents, String mappingsContents, String mcVersion, Logger logger) {
 
+        ClassLoader classLoader = getClass().getClassLoader();
 
-    private void assertEmojiful(String atToAW, String awToAT, File perfect) {
-        String perfectAWString = Utils.getFileContents(perfect, true);
+        File originalAW = new File(classLoader.getResource(String.format("%s/%s/original_%s.accesswidener", mcVersion, modid, modid)).getFile());
+        File originalAT = new File(classLoader.getResource(String.format("%s/%s/original_accesstransformer.cfg", mcVersion, modid, modid)).getFile());
+        File idealAT = new File(classLoader.getResource(String.format("%s/%s/result.perfect_transformer", mcVersion, modid, modid)).getFile());
+        File idealAW = new File(classLoader.getResource(String.format("%s/%s/result.perfect_widener", mcVersion, modid, modid)).getFile());
+
+        String atToAW = "accessWidener v1 named" + System.lineSeparator().concat(AWConverter.convertFile(logger, originalAT, tsrgContents, mappingsContents)).concat(System.lineSeparator());
+        String awToAT = ATConverter.convertFile(logger, originalAW, tsrgContents).concat(System.lineSeparator());
+
+        String perfectAWString = Utils.getFileContents(idealAW, true);
         assertEquals(perfectAWString, atToAW);
+        String perfectATString = Utils.getFileContents(idealAT, true);
+        assertEquals(perfectATString, awToAT);
     }
+
 
 }
