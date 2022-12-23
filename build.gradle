@@ -50,6 +50,20 @@ gradlePlugin {
     }
 }
 
+test {
+    scanForTestClasses(true)
+
+    testLogging {
+        events "passed"
+        setShowStandardStreams true
+    }
+}
+
+build {
+    dependsOn(test)
+
+}
+
 publishing {
     publications {
 

@@ -55,6 +55,8 @@ public class WidenerToTransformerTest {
         assertEquals(perfectAWString, atToAW);
         String perfectATString = Utils.getFileContents(idealAT, true);
         assertEquals(perfectATString, awToAT);
+
+        System.out.println(awToAT   );
     }
 
 
