@@ -19,45 +19,71 @@ import static org.gradle.internal.impldep.org.junit.Assert.assertEquals;
 
 public class WidenerToTransformerTest {
 
-    public static final String[] MC_VERSIONS = {"1.19.3"};
-
     @Test
     public void testEverything() {
 
         Logger logger = LoggerFactory.getLogger("AccessConverter-Test");
 
-        for (String gameVersion : MC_VERSIONS) {
+
+        assertEquals("public net.minecraft.server.MinecraftServer$ReloadableResources", new ATConverter.ATEntry("public", "net.minecraft.server.MinecraftServer$ReloadableResources", "", "").toString());
+
+
+        assertMod(new TestMetadata("emojiful", "1.19.3"), logger);
+        assertMod(new TestMetadata("crafttweaker", "1.19.2"), logger);
+
+    }
+
+    public void assertConstructor() {
+        File tsrg = Utils.getTSRGPath("1.19.2");
+        String tsrgContents = Utils.getFileContents(tsrg);
+        File clientMappings = Utils.getClientMappings("1.19.2");
+        assertEquals("public net.minecraft.world.damagesource.DamageSource <init>(Ljava/lang/String;)V",
+                testLine("accessible method net/minecraft/world/damagesource/DamageSource <init> (Ljava/lang/String;)V", tsrgContents));
+
+    }
+
+    private void assertMod(TestMetadata metadata, Logger logger) {
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        File rootFile = new File(classLoader.getResource("dummy.txt").getFile()).getParentFile();
+        File modidFolder = new File(rootFile, metadata.modid());
+
+        for (String gameVersion : metadata.versions()) {
             File tsrg = Utils.getTSRGPath(gameVersion);
             String tsrgContents = Utils.getFileContents(tsrg);
-
+            File rootModFolder = new File(modidFolder, gameVersion);
             File clientMappings = Utils.getClientMappings(gameVersion);
             String mappingsContents = Utils.getFileContents(clientMappings);
 
+            String modid = metadata.modid();
+            File originalAW = new File(rootModFolder, "original_" + modid + ".accesswidener");
+            File originalAT = new File(rootModFolder, "original_accesstransformer.cfg");
+            File idealAT = new File(rootModFolder, "result.perfect_transformer");
+            File idealAW = new File(rootModFolder, "result.perfect_widener");
 
+            String atToAW = "accessWidener v1 named" + System.lineSeparator().concat(AWConverter.convertFile(logger, originalAT, tsrgContents, mappingsContents)).concat(System.lineSeparator());
+            String awToAT = ATConverter.convertFile(logger, originalAW, tsrgContents).concat(System.lineSeparator());
 
-            assertMod("emojiful", tsrgContents, mappingsContents, gameVersion, logger);
+            String perfectAWString = Utils.getFileContents(idealAW, true);
+            assertEquals("AT to AW Conversion Failed: " + System.lineSeparator() + atToAW + System.lineSeparator(), perfectAWString, atToAW);
+            String perfectATString = Utils.getFileContents(idealAT, true);
+            assertEquals("AW to AT Conversion Failed: " + System.lineSeparator() + awToAT + System.lineSeparator(), perfectATString, awToAT);
         }
     }
 
-    private void assertMod(String modid, String tsrgContents, String mappingsContents, String mcVersion, Logger logger) {
-
-        ClassLoader classLoader = getClass().getClassLoader();
-
-        File originalAW = new File(classLoader.getResource(String.format("%s/%s/original_%s.accesswidener", mcVersion, modid, modid)).getFile());
-        File originalAT = new File(classLoader.getResource(String.format("%s/%s/original_accesstransformer.cfg", mcVersion, modid, modid)).getFile());
-        File idealAT = new File(classLoader.getResource(String.format("%s/%s/result.perfect_transformer", mcVersion, modid, modid)).getFile());
-        File idealAW = new File(classLoader.getResource(String.format("%s/%s/result.perfect_widener", mcVersion, modid, modid)).getFile());
-
-        String atToAW = "accessWidener v1 named" + System.lineSeparator().concat(AWConverter.convertFile(logger, originalAT, tsrgContents, mappingsContents)).concat(System.lineSeparator());
-        String awToAT = ATConverter.convertFile(logger, originalAW, tsrgContents).concat(System.lineSeparator());
-
-        String perfectAWString = Utils.getFileContents(idealAW, true);
-        assertEquals(perfectAWString, atToAW);
-        String perfectATString = Utils.getFileContents(idealAT, true);
-        assertEquals(perfectATString, awToAT);
-
-        System.out.println(awToAT   );
+    private static String testLine(String input, String tsrg) {
+        String[] splitString = input.split(" ");
+        String accessModifier = splitString[0].equals("accessible") ? "public" : "public-f";
+        String type = splitString[1];
+        String clazz = splitString[2];
+        if ("class".equals(type)) {
+            return new ATConverter.ATEntry(accessModifier, clazz.replace("/", "."), "", "").toString();
+        } else {
+            String mojmapName = splitString[3];
+            //target is either the method signature if it's a method or the target type if it's a field
+            String target = splitString[4];
+            return ATConverter.convertMojmapToSrg(tsrg, mojmapName, target, accessModifier, clazz, type).toString();
+        }
     }
-
 
 }

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
  */
 public class ATConverter {
 
+
     public static String convertFile(Logger logger, File awFileToConvert, String tsrgContents) {
         Map<String, ATEntry> map = new HashMap<>();
 
@@ -151,13 +152,13 @@ public class ATConverter {
         return new ATEntry(acccesModifier, clazz, "INVALID_TYPE_NAME_SUPPLIED", target);
     }
 
-    private static class ATEntry {
+    public static class ATEntry {
         public String modifier;
         public final String clazz;
         public final String srgName;
         public String signature;
 
-        ATEntry(String modifier, String clazz, String srgName, String signature) {
+        public ATEntry(String modifier, String clazz, String srgName, String signature) {
             this.modifier = modifier;
             this.clazz = clazz;
             this.srgName = srgName;
@@ -166,7 +167,8 @@ public class ATConverter {
 
         @Override
         public String toString() {
-            return modifier + " "  + clazz + " " + srgName + (srgName.isEmpty() ? " " : "") + signature;
+            boolean appendSpace = srgName.isEmpty() && !signature.isEmpty() && signature.startsWith("<init>");
+            return modifier + " "  + clazz + (srgName.isEmpty() ? "" : " ") + srgName + (appendSpace ? " " : "") + signature;
         }
 
         void setModifier(String modifier){
