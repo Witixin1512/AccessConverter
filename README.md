@@ -5,11 +5,11 @@ Apply the plugin the following way, ideally in your rootProject buildscript, out
 
 ```groovy
 plugins {
-    id 'witixin.accessconverter' version '1.0.+'
+    id 'witixin.accessconverter' version '1.0.0.+'
 }
 
 accessConverter {
-    mcVersion "1.19.2"
+    mcVersion "1.19.3"
     //Converts the AccessWidener found at the fileToConvert location into an accesstransformer dropped into the fileToOutput location.
     convertAW {
         //optional, sorts the input file
