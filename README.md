@@ -5,7 +5,7 @@ Apply the plugin the following way, ideally in your rootProject buildscript, out
 
 ```groovy
 plugins {
-    id 'witixin.accessconverter' version '1.0.0.+'
+    id 'witixin.accessconverter' version '1.0.+'
 }
 
 accessConverter {
@@ -31,4 +31,4 @@ accessConverter {
 
 The plugin requires java 17 and only supports MC 1.18.2 and above!
 
-As of 1.0.0.+, you NEED to import a Forge Workspace (so it caches required files) with official mappings (parchment won't work) BEFORE refreshing your MultiLoader workspace!
+As of 1.0.+, you NEED to import a Forge Workspace (so it caches required files) with official mappings (parchment won't work) BEFORE refreshing your MultiLoader workspace!
