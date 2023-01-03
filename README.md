@@ -1,7 +1,7 @@
 # AccessConverter
 A Gradle Plugin for automatically converting from Access Wideners to Access Transformers and viceversa.
 
-Apply the plugin the following way:
+Apply the plugin the following way, ideally in your rootProject buildscript, outside the `subprojects` block:
 
 ```groovy
 plugins {
@@ -29,4 +29,6 @@ accessConverter {
 }
 ```
 
-Run the `convertAccessFiles` task after configuring the plugin and you're set to go!
+The plugin requires java 17 and only supports MC 1.18.2 and above!
+
+As of 1.0.0.0, you NEED to import a Forge Workspace (so it caches required files) with official mappings (parchment won't work) BEFORE refreshing your MultiLoader workspace!

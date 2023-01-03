@@ -1,6 +1,5 @@
 package witixin.accessconverter.conversion;
 
-import org.gradle.api.Project;
 import org.slf4j.Logger;
 import witixin.accessconverter.AccessConverterPlugin;
 import witixin.accessconverter.Utils;
@@ -81,7 +80,7 @@ public class ATConverter {
         if (tsrgContents.isEmpty()){
             logger.error("[ERROR] tsrg contents are empty");
             logger.error("[ERROR] Verify that " + tsrg.getAbsolutePath() + " contains a valid tsrg file");
-            logger.error("[ERROR] If there is nothing there, you NEED to import a 1.19.3 workspace with OFFICIAL Mappings on Forge!");
+            logger.error("[ERROR] If there is nothing there, you NEED to import a " + version + "workspace with OFFICIAL Mappings on Forge!");
             return false;
         }
 

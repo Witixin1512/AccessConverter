@@ -19,24 +19,27 @@ import static org.gradle.internal.impldep.org.junit.Assert.assertEquals;
 
 public class WidenerToTransformerTest {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger("AccessConverter-Test");
+
     @Test
-    public void testEverything() {
-
-        Logger logger = LoggerFactory.getLogger("AccessConverter-Test");
-
-
+    public void assertClass() {
         assertEquals("public net.minecraft.server.MinecraftServer$ReloadableResources", new ATConverter.ATEntry("public", "net.minecraft.server.MinecraftServer$ReloadableResources", "", "").toString());
-
-
-        assertMod(new TestMetadata("emojiful", "1.19.3"), logger);
-        assertMod(new TestMetadata("crafttweaker", "1.19.2"), logger);
-
     }
 
+    @Test
+    public void testEmojiful() {
+        assertMod(new TestMetadata("emojiful", "1.19.3"), LOGGER);
+    }
+
+    @Test
+    public void testCraftTweaker() {
+        assertMod(new TestMetadata("crafttweaker", "1.19.2"), LOGGER);
+    }
+
+    @Test
     public void assertConstructor() {
         File tsrg = Utils.getTSRGPath("1.19.2");
         String tsrgContents = Utils.getFileContents(tsrg);
-        File clientMappings = Utils.getClientMappings("1.19.2");
         assertEquals("public net.minecraft.world.damagesource.DamageSource <init>(Ljava/lang/String;)V",
                 testLine("accessible method net/minecraft/world/damagesource/DamageSource <init> (Ljava/lang/String;)V", tsrgContents));
 
