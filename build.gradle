@@ -43,6 +43,7 @@ pluginBundle {
 gradlePlugin {
     plugins {
         accessconverter {
+            displayName = 'Access Converter'
             id = 'witixin.accessconverter'
             implementationClass = 'witixin.accessconverter.AccessConverterPlugin'
             description = 'A Gradle plugin aimed to be used in conjuction with Minecraft that allows users to convert between Access Wideners and Access Transformer files'
