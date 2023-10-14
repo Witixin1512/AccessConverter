@@ -1,4 +1,4 @@
-package witixin.accessconverter;
+package net.witixin.accessconverter;
 
 import org.gradle.api.Action;
 

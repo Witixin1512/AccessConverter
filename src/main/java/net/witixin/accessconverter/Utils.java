@@ -1,9 +1,7 @@
-package witixin.accessconverter;
+package net.witixin.accessconverter;
 
-import org.gradle.api.Project;
 import org.gradle.internal.installation.CurrentGradleInstallation;
 
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -21,17 +19,39 @@ public class Utils {
         map.put("1.18.2", "20220404.173914");
         map.put("1.19.2", "20220805.130853");
         map.put("1.19.3", "20221207.122022");
+        map.put("1.19.4", "20230314.122934");
+        map.put("1.20", "20230608.053357");
+        map.put("1.20.1", "20230612.114412");
+        map.put("1.20.2", "20230921.100330");
         return map;
     });
 
     public static File getTSRGPath(String mcVersion) {
+
+
         File mcpConfigFolder = new File(PATH_TO_GRADLE_HOME, "/caches/forge_gradle/minecraft_user_repo/de/oceanlabs/mcp/mcp_config");
         String mcpConfigVersion = MC_VERSION_TO_MCP.get(mcVersion);
-        if (mcpConfigVersion == null) throw new NullPointerException("Access Converter does not support that Minecraft Version!");
-        return new File(mcpConfigFolder, mcVersion + "-" + mcpConfigVersion + "/srg_to_official_" + mcVersion + ".tsrg");
-    }
+        if (mcpConfigVersion != null) {
+            final File returnFile = new File(mcpConfigFolder, mcVersion + "-" + mcpConfigVersion + "/srg_to_official_" + mcVersion + ".tsrg");
+            if (returnFile.exists()) return returnFile;
+        }
+        return null;
+        /*
+        try {
+            //Path file = Requests.INSTANCE.getFile("https://piston-data.mojang.com/v1/objects/42366909cc612e76208d34bf1356f05a88e08a1d/client.txt", Path.of(".", "client.txt"));
+            //IMappingFile.load(file.toFile()).rename().write(Path.of(".", "output.txt"), IMappingFile.Format.TSRG2, true);
+
+        }
+        catch (IOException ioException) {
+
+        }
+
+         */
+   }
 
     public static File getClientMappings(String mcVersion) {
+        final File vanillaGradleCache = new File(PATH_TO_GRADLE_HOME, "VanillaGradle/v2/jars/net/minecraft/client_m-obf-" + mcVersion + "-mappings.txt");
+        if (vanillaGradleCache.exists()) return vanillaGradleCache;
         String mcpConfigVersion = MC_VERSION_TO_MCP.get(mcVersion);
         if (mcpConfigVersion == null) throw new NullPointerException("Access Converter does not support that Minecraft Version!");
         File clientMappings = new File(PATH_TO_GRADLE_HOME, "/caches/forge_gradle/minecraft_user_repo/mcp/" + mcVersion + "-" + mcpConfigVersion + "/joined/downloadClientMappings");

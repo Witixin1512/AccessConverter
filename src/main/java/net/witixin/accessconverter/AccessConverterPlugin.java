@@ -1,9 +1,9 @@
-package witixin.accessconverter;
+package net.witixin.accessconverter;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import witixin.accessconverter.conversion.ATConverter;
-import witixin.accessconverter.conversion.AWConverter;
+import net.witixin.accessconverter.conversion.ATConverter;
+import net.witixin.accessconverter.conversion.AWConverter;
 
 public class AccessConverterPlugin implements Plugin<Project> {
 

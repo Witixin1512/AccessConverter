@@ -1,8 +1,8 @@
-package witixin.accessconverter.conversion;
+package net.witixin.accessconverter.conversion;
 
+import net.witixin.accessconverter.AccessConverterPlugin;
+import net.witixin.accessconverter.Utils;
 import org.slf4j.Logger;
-import witixin.accessconverter.AccessConverterPlugin;
-import witixin.accessconverter.Utils;
 
 import java.io.*;
 import java.nio.file.Files;
